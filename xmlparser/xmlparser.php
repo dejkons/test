@@ -4,7 +4,7 @@
  * Date: 10.05.2017.
  * Description: function for parsing given xml
  * Comment: Function is using stream based parser "XMLReader" library because it is not mentioned
- * size of potential XML file in assignement and available memory.
+ * size of potential XML file in assignement and available memory
  */
 
 function xmlToCSV($text) {
