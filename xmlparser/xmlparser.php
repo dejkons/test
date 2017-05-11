@@ -13,8 +13,8 @@ function xmlToCSV($text) {
     $reader = new XMLReader();
     $reader->xml($text);
 	
-	// initialize output
-	$csv = "Title|Code|Duration|Inclusions|MinPrice\n\r";
+    // initialize output
+    $csv = "Title|Code|Duration|Inclusions|MinPrice\n\r";
     
     while ($reader->read()) {
         
@@ -22,13 +22,13 @@ function xmlToCSV($text) {
 			    
                 if ($reader->localName == "TOUR") {
 
-					$xmlNodeArray = array();
+				    $xmlNodeArray = array();
                     $nodeLowestPrice = 0;
 					
                     // TOUR node found, read internal TOUR elements
                     while ($reader->read()) { 
                         if ($reader->nodeType == XMLREADER::ELEMENT) {
-                            
+                
                             if ($reader->localName == "Title") {
                                 $reader->read();
 								$value = trim($reader->value);
@@ -37,7 +37,7 @@ function xmlToCSV($text) {
                                 } else {
                                     $xmlNodeArray[] = "";
                                 }
-                            } else if (($reader->localName == "Code") or ($reader->localName == "Duration")) {
+                            } else if ($reader->localName == "Code") {
                                 $reader->read();
 								$value = trim($reader->value);
                                 if (!empty($value) and ($value != '')) {
@@ -45,6 +45,14 @@ function xmlToCSV($text) {
                                 } else {
                                     $xmlNodeArray[] = "";
                                 }
+						    } else if ($reader->localName == "Duration") {
+                                $reader->read();
+								$value = trim($reader->value);
+                                if (!empty($value) and ($value != '')) {
+                                    $xmlNodeArray[] = intval($value);
+                                } else {
+                                    $xmlNodeArray[] = "";
+                                }		
                             } else if ($reader->localName == "Inclusions") {
                                 $value = trim($reader->readString());
                                 if (!empty($value) and ($value != '')) {
@@ -90,13 +98,13 @@ function xmlToCSV($text) {
                     }
                     
                     if (sizeof($xmlNodeArray) == 5) {
-						$csv .= implode("|", $xmlNodeArray)."\n\r";
-					}
+					    $csv .= implode("|", $xmlNodeArray)."\n\r";
+				    }
                 }
         }
     }
 	
-	return $csv;
+    return $csv;
 }
 
 // test
