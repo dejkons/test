@@ -4,52 +4,50 @@
  * Date: 10.05.2017.
  * Description: function for parsing given xml
  * Comment: Function is using stream based parser "XMLReader" library because it is not mentioned
- * in assignement size of potential XML file. Also, it is not mentioned
- * available memory
+ * size of potential XML file in assignement and available memory.
  */
 
 function xmlToCSV($text) {
     
-    // prepare csv file
-    
     // create xml reader and loop through xml nodes
     $reader = new XMLReader();
     $reader->xml($text);
+	
+	// initialize output
+	$csv = "Title|Code|Duration|Inclusions|MinPrice\n\r";
     
     while ($reader->read()) {
         
         if ($reader->nodeType == XMLREADER::ELEMENT) {
+			    
                 if ($reader->localName == "TOUR") {
-                    $xmlNodeArray = array();
+
+					$xmlNodeArray = array();
                     $nodeLowestPrice = 0;
+					
                     // TOUR node found, read internal TOUR elements
                     while ($reader->read()) { 
                         if ($reader->nodeType == XMLREADER::ELEMENT) {
                             
                             if ($reader->localName == "Title") {
                                 $reader->read();
-                                if (!empty(trim($reader->value))) {
+								$value = trim($reader->value);
+                                if (!empty($value) and ($value != '')) {
                                     $xmlNodeArray[] = htmlspecialchars_decode($reader->value);
                                 } else {
                                     $xmlNodeArray[] = "";
                                 }
-                            } else if ($reader->localName == "Code") {
+                            } else if (($reader->localName == "Code") or ($reader->localName == "Duration")) {
                                 $reader->read();
-                                if (!empty(trim($reader->value))) {
-                                    $xmlNodeArray[] = $reader->value;
-                                } else {
-                                    $xmlNodeArray[] = "";
-                                }
-                            } else if ($reader->localName == "Duration") {
-                                $reader->read();
-                                if (!empty(trim($reader->value))) {
-                                    $xmlNodeArray[] = $reader->value;
+								$value = trim($reader->value);
+                                if (!empty($value) and ($value != '')) {
+                                    $xmlNodeArray[] = $value;
                                 } else {
                                     $xmlNodeArray[] = "";
                                 }
                             } else if ($reader->localName == "Inclusions") {
-                                $value = $reader->readString();
-                                if (!empty(trim($value))) {
+                                $value = trim($reader->readString());
+                                if (!empty($value) and ($value != '')) {
                                     $tempInclusions = trim(htmlspecialchars_decode(strip_tags($value)));
                                     $tempInclusions = str_replace("&nbsp;", ' ', $tempInclusions);
                                     $xmlNodeArray[] = preg_replace("/\s+/", " ", $tempInclusions);
@@ -57,27 +55,21 @@ function xmlToCSV($text) {
                                     $xmlNodeArray[] = "";
                                 } 
                             } else if ($reader->localName == "DEP") {
-         
-                                if($reader->hasAttributes) {
-                                    
+                                if($reader->hasAttributes) {                                   
                                     $eurPrice = 0;
-                                    $discount = 0;
-                                    
+                                    $discount = 0;                              
                                     while($reader->moveToNextAttribute())
                                     {
                                         if ($reader->name == "EUR") {
                                             $eurPrice = round($reader->value,2);
-                                        }
-                                        
+                                        }                                        
                                         if ($reader->name == "DISCOUNT") {
                                             $discount = intval(str_replace("%","", $reader->value));
                                         }
-                                    }
-                                    
+                                    }                                   
                                     if ($discount > 0) {
                                         $eurPrice = $eurPrice - ($eurPrice / 100 * $discount);
-                                    }
-                                    
+                                    }                                   
                                     if (($nodeLowestPrice == 0) || ($eurPrice < $nodeLowestPrice)) {
                                         $nodeLowestPrice = $eurPrice;
                                     }
@@ -97,14 +89,21 @@ function xmlToCSV($text) {
                         }
                     }
                     
-                    print_r($xmlNodeArray);
+                    if (sizeof($xmlNodeArray) == 5) {
+						$csv .= implode("|", $xmlNodeArray)."\n\r";
+					}
                 }
         }
     }
+	
+	return $csv;
 }
 
+// test
 $text = file_get_contents("doc.xml");
-xmlToCSV($text);
+$csv = xmlToCSV($text);
+echo $csv;
+
 
 ?>
 
